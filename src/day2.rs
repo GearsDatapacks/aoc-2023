@@ -13,19 +13,15 @@ pub fn main() {
 
   let mut sum = 0;
 
-  let max_counts = (12,13,14);
   for game in games {
-    let mut plausible = true;
-    for revealed in game.revealed {
-      // println!("{:?} >= {:?}: {}", revealed, max_counts, !less_than(revealed, max_counts));
-      if !less_than(revealed, max_counts) {
-        plausible = false;
-        break;
-      }
+    let mut min_counts = (0,0,0);
+    for revealed in &game.revealed {
+      min_counts.0 = min_counts.0.max(revealed.0);
+      min_counts.1 = min_counts.1.max(revealed.1);
+      min_counts.2 = min_counts.2.max(revealed.2);
     }
-    if plausible {
-      sum += game.id;
-    }
+    let power = min_counts.0 * min_counts.1 * min_counts.2;
+    sum += power;
   }
 
   println!("{}", sum);
