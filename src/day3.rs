@@ -4,42 +4,32 @@ pub fn main() {
   let mut sum = 0;
 
   for (line_number, line) in matrix.iter().enumerate() {
-    let mut i = 0;
-    while i < line.len() {
-      let ch = line[i];
-      if !ch.is_digit(10) {
-        i += 1;
+    for (line_index, &ch) in line.iter().enumerate() {
+      if ch != '*' {
         continue;
       }
 
-      let start_index = if i == 0 {0} else {i-1};
-      let mut num_str = "".to_string();
-      while i < line.len() && line[i].is_digit(10) {
-        num_str.push(line[i]);
-        i += 1;
-      }
+      let mut adjacent_nums: Vec<i32> = Vec::new();
+      let start_line = if line_number == 0 {0} else {line_number - 1};
+      let end_line = (matrix.len()-1).min(line_number+1);
 
-      let end_index = if i == matrix.len() {i - 1} else {i};
-      let num: i32 = num_str.parse().unwrap();
+      let start_index = if line_index == 0 {0} else {line_index - 1};
+      let end_index = (line.len()-1).min(line_index + 1);
 
-      let prev_line = if line_number == 0 {0} else {line_number - 1};
-      let next_line = if line_number == matrix.len() - 1 {line_number} else {line_number + 1};
-
-      let mut part_number = false;
-      for x in start_index..=end_index {
-        for y in prev_line..=next_line {
-          if is_symbol(matrix[y][x]) {
-            part_number = true;
-            break;
+      let mut y = start_line;
+      while y <= end_line {
+        let mut x = start_index;
+        while x <= end_index {
+          if let Some(x) = parse_int(&matrix, &mut x, y) {
+            adjacent_nums.push(x)
           }
+          x += 1;
         }
-        if part_number {
-          break;
-        }
+        y += 1;
       }
 
-      if part_number {
-        sum += num;
+      if adjacent_nums.len() == 2 {
+        sum += adjacent_nums[0] * adjacent_nums[1];
       }
     }
   }
@@ -47,8 +37,29 @@ pub fn main() {
   println!("{}", sum);
 }
 
-fn is_symbol(ch: char) -> bool {
-  return !ch.is_digit(10) && ch != '.';
+fn parse_int(matrix: &[Vec<char>], x: &mut usize, y: usize) -> Option<i32> {
+    if !matrix[y][*x].is_digit(10) {
+      return None;
+    }
+
+    let mut num_str = "".to_string();
+    while matrix[y][*x - 1].is_digit(10) {
+      *x -= 1;
+      if *x == 0 {
+        break;
+      }
+    }
+
+    while *x < matrix.len() && matrix[y][*x].is_digit(10) {
+      num_str.push(matrix[y][*x]);
+      if *x < matrix.len() - 1 {
+        *x += 1;
+      } else {
+        break;
+      }
+    }
+
+    return num_str.parse().ok();
 }
 
 //123...
